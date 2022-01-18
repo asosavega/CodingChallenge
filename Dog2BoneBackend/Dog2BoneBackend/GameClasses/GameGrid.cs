@@ -1,5 +1,6 @@
 ﻿using Dog2BoneBackend.Models;
 using System.Linq;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -8,10 +9,11 @@ namespace Dog2BoneBackend.GameClasses
     public class GameGrid
     {
         private GridToken[,] grid;
-        private readonly int gridWidth;
-        private readonly int gridHeight;
+        private int gridWidth;
+        private int gridHeight;
         private DogToken dog;
         private GameGridStatus gameGridStatus;
+        private GameGridSettings? settings;
 
         public Queue<char> StepSequence { get; private set; } = new Queue<char>();
         
@@ -22,50 +24,63 @@ namespace Dog2BoneBackend.GameClasses
             {
                 using (FileStream openStream = File.OpenRead(gameSettingsFile))
                 {
-                    GameGridSettings? settings =
+                    settings =
                         JsonSerializer.Deserialize<GameGridSettings>(openStream, new JsonSerializerOptions()
                         {
                             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
                         });
-
-                    if (settings == null)
-                        throw new Exception();
-
-
-                    gridWidth = settings.BoardSize[0];
-                    gridHeight = settings.BoardSize[1];
-                    grid = new GridToken[gridWidth, gridHeight]; //Create Grid
-                    int dogXStartingPosition = settings.StartingPosition[0];
-                    int dogYStatingPostition = settings.StartingPosition[1];
-                    grid[dogXStartingPosition, dogYStatingPostition] = this.dog = new DogToken(dogXStartingPosition, dogYStatingPostition); //Setup Dog Starting Position
-
-                    int boneXLoc = settings.BonePosition[0];
-                    int boneYLoc = settings.BonePosition[1];
-                    grid[boneXLoc, boneYLoc] = new BoneToken(boneXLoc, boneYLoc); //Setup Bone Position
-
-                    //Initialize Grid Status
-                    gameGridStatus = new GameGridStatus()
-                    {
-                        IsGameOver = false,
-                        CurrentStateMessage = "Still Looking",
-                        GridSize = new[] { gridWidth, gridHeight },
-                        DogLocation = new int[] { dogXStartingPosition, dogYStatingPostition },
-                        BoneLocation = new int[] { boneXLoc , boneYLoc }
-                    };
-
-                    //Set Cat positions if provided
-                    if (settings.CatLocations != null)
-                    {
-                        for(int x=0; x < settings.CatLocations.Length; x+=2)
-                        {
-                            int y = x + 1;
-                            CatToken cat = new CatToken(settings.CatLocations[x], settings.CatLocations[y]);
-                            grid[settings.CatLocations[x], settings.CatLocations[y]] = cat;
-                            gameGridStatus.CatLocations.Add(new int[] { cat.tXLoc, cat.tYLoc });
-                        }
-                    }                    
+                    SetStartupGrid();
                 }
             }
+        }
+
+        public void RestartGame()
+        {
+            SetStartupGrid();
+        }
+
+        private void SetStartupGrid()
+        {
+            if (settings == null)
+                throw new Exception();
+
+
+            gridWidth = settings.BoardSize[0];
+            gridHeight = settings.BoardSize[1];
+            grid = new GridToken[gridWidth, gridHeight]; //Create Grid
+            int dogXStartingPosition = settings.StartingPosition[0];
+            int dogYStatingPostition = settings.StartingPosition[1];
+            grid[dogXStartingPosition, dogYStatingPostition] = this.dog = new DogToken(dogXStartingPosition, dogYStatingPostition); //Setup Dog Starting Position
+
+            int boneXLoc = settings.BonePosition[0];
+            int boneYLoc = settings.BonePosition[1];
+            grid[boneXLoc, boneYLoc] = new BoneToken(boneXLoc, boneYLoc); //Setup Bone Position
+
+            //Initialize Grid Status
+            gameGridStatus = new GameGridStatus()
+            {
+                IsGameOver = false,
+                CurrentStateMessage = "Still Looking",
+                GridSize = new[] { gridWidth, gridHeight },
+                DogFacing = dog.dogDirection.ToString(),
+                DogLocation = new int[] { dogXStartingPosition, dogYStatingPostition },
+                BoneLocation = new int[] { boneXLoc, boneYLoc },
+                RemainingDogActions = ""
+            };
+
+            //Set Cat positions if provided
+            if (settings.CatLocations != null)
+            {
+                foreach (int[] catLocPair in settings.CatLocations)
+                {
+                    CatToken cat = new CatToken(catLocPair[0], catLocPair[1]);
+                    grid[catLocPair[0], catLocPair[1]] = cat;
+                    gameGridStatus.CatLocations.Add(new int[] { cat.tXLoc, cat.tYLoc });
+                }
+            }
+
+            //Ensure queue is Empty in case of restart
+            StepSequence.Clear();
         }
 
         public GameGridStatus PerformNextDogAction()
@@ -83,6 +98,9 @@ namespace Dog2BoneBackend.GameClasses
                 || dog.newtXLoc >= gridWidth || dog.newtYLoc >= gridHeight) //Out of bounds Scenario
             {
                 gameGridStatus.CurrentStateMessage = "Out of bounds";
+                gameGridStatus.RemainingDogActions = (StepSequence.Count > 0) ? new string(StepSequence.ToArray()) : "";
+                return gameGridStatus;
+
             }
             else if(grid[dog.newtXLoc, dog.newtYLoc]?.GetType() == typeof(CatToken)) //Has awaken a cat
             {
@@ -107,7 +125,9 @@ namespace Dog2BoneBackend.GameClasses
 
             //Update Grid Status Dog Coordinates
             gameGridStatus.DogLocation[0] = dog.newtXLoc; 
-            gameGridStatus.DogLocation[1] = dog.newtYLoc; 
+            gameGridStatus.DogLocation[1] = dog.newtYLoc;
+            gameGridStatus.DogFacing = dog.dogDirection.ToString();
+            gameGridStatus.RemainingDogActions = (StepSequence.Count > 0) ? new string(StepSequence.ToArray()) : "";
 
             return gameGridStatus;
         }
@@ -138,6 +158,7 @@ namespace Dog2BoneBackend.GameClasses
             {
                 StepSequence.Enqueue(element);
             }
+            gameGridStatus.RemainingDogActions += dogActions;
 
             return true;
         }

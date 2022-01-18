@@ -1,0 +1,111 @@
+﻿@page "/dog2bone/{gameID}"
+@using Dog2BoneFrontEnd.Data;
+@inject NavigationManager NavigationManager
+@implements IDisposable
+
+
+<PageTitle>Dog2Bone</PageTitle>
+
+<h1>Dog2Bone</h1>
+@code {
+    
+}
+
+<div>
+    <p> Actions Queue</p>
+    <div>@board.GetActionsQueue()</div>
+    <div>
+        <button @onclick="() => board.PerformNextDogAction()" disabled="@board.IsGameOver">Perform Next Action</button>
+        <button @onclick="() => board.PerformRemainingDogActions()" disabled="@board.IsGameOver">Perform Remaining Actions</button>
+        <button @onclick="() => board.RestartGame()" >Restart Game</button>
+    </div>
+</div>
+ <div class="board">
+    @for(int i=0; i<board.BoardWidth;i++)
+    {
+        <div class="column">
+            @for (int j=0; j<board.BoardHeight; j++)
+            {
+                int x = i;
+                int y = j;
+                <div id=grid class="gamepiece                            
+                            @board.Board[i,j].Style.ToString().ToLower()
+                            facing@(board.Board[i,j].faceDirection.ToString())">
+                </div>
+                        
+            }
+        </div>
+    }
+</div>
+
+<div class="boardSettings">
+    <div class="settingsColumn">
+        <p>Choose a Command File:</p>
+        @foreach(FileInfo e in dogActionFiles)
+        {
+            <div class="fileSelector" @onclick="@(() => LoadSelectedFile(e.FullName))">@e.Name</div>
+        }
+    </div>
+    <div class="settingsColumn">
+        <p>Command File Content:</p>
+        @if(!string.IsNullOrEmpty(@dogActionSequenceData))
+        {
+            <p role="status">@dogActionSequenceData</p>
+        }
+    </div>
+    <button @onclick="@(() => FeedDogActions())" disabled="@board.IsGameOver">Feed actions to Dog Actions Queue</button>
+</div>
+
+<div class="sidebar rightSidebar">
+    <div class="statusReport">
+        <p>Game Status Message:</p>
+        <p>@board.GetStatusMessage()</p>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string gameID { get; set; }
+    private GameBoard board;
+    private FileInfo[] dogActionFiles = new DirectoryInfo(@"../../GameFiles").GetFiles("dog*Actions*.txt");
+    private string selectedFile = "";
+    private string dogActionSequenceData = "";
+
+    private void LoadSelectedFile(string filePath)
+    {
+        selectedFile = filePath;
+
+        dogActionSequenceData = File.ReadAllText(selectedFile);
+    }
+
+    private bool FeedDogActions()
+    {
+        return board.FeedDogActions(selectedFile);
+    }
+
+    protected override void OnInitialized()
+    {
+        if(board == null)
+        {
+            board = new GameBoard(Guid.Parse(gameID));
+        }
+        // Subscribe to the event
+        NavigationManager.LocationChanged += LocationChanged;
+        base.OnInitialized();
+    }
+
+    void LocationChanged(object sender, LocationChangedEventArgs e)
+    {
+        string navigationMethod = e.IsNavigationIntercepted ? "HTML" : "code";
+        System.Diagnostics.Debug.WriteLine($"Notified of navigation via {navigationMethod} to {e.Location}");
+
+        board.FinishGame();
+    }
+
+    void IDisposable.Dispose()
+    {
+      // Unsubscribe from the event when our component is disposed
+      NavigationManager.LocationChanged -= LocationChanged;
+    }
+
+}

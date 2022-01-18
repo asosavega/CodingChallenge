@@ -2,7 +2,7 @@
 {
     public class DogToken : GridToken
     {
-        private enum Direction
+        public enum Direction
         {
             Up = 1,
             Right = 2,
@@ -10,7 +10,7 @@
             Left = 4
         }
 
-        private Direction dogDirection = Direction.Up;
+        public Direction dogDirection { get; private set; } = Direction.Up;
         public int newtXLoc { get; private set; }
         public int newtYLoc { get; private set; }
         public DogToken(int x, int y) : base(x, y)

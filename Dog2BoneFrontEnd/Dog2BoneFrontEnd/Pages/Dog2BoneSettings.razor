@@ -1,0 +1,70 @@
+﻿ @page "/" 
+ @using Dog2BoneFrontEnd.Data;
+ @using System.Reflection;
+ @inject NavigationManager NavManager
+
+<h3>Dog2BoneSettings</h3>
+
+@code {
+    private FileInfo[] gameSettings = new DirectoryInfo(@"../../GameFiles").GetFiles("Game*Settings*.json");
+}
+
+<div class="boardSettings">
+    <div class="settingsColumn">
+        <p>Choose Settings File:</p>
+        @foreach(FileInfo e in gameSettings)
+        {
+            <div class="fileSelector" @onclick="@(() => LoadSelectedFile(e.FullName))">@e.Name</div>
+        }
+    </div>
+    <div class="settingsColumn">
+        <p>Settings File Content:</p>
+        @if (@settings != null)
+        {
+            <p role="status">Board Size: @settings.BoardSize[0] x  @settings.BoardSize[1]</p>
+            <p role="status">Dog Starting Location: [@settings.StartingPosition[0], @settings.StartingPosition[1]]</p>
+            <p role="status">Bone Location: [@settings.BonePosition[0],@settings.BonePosition[1]]</p>
+            <p role="status">Cat Locations: 
+                @foreach(int[] catLocation in @settings.CatLocations)
+                {
+                    <span>[@catLocation[0],@catLocation[1]] </span>
+                }
+            </p>
+        }
+    </div>
+    <button @onclick="@(() => StartGame())">Start the Game!</button>
+</div>
+
+@code {
+    private GameGridSettings? settings;
+    private string selectedFile = "";
+    private void LoadSelectedFile(string filePath)
+    {
+        selectedFile = filePath;
+        using (FileStream openStream = File.OpenRead(filePath))
+        {
+            settings =
+                JsonSerializer.Deserialize<GameGridSettings>(openStream, new JsonSerializerOptions()
+                {
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+                });
+        }
+    }
+
+    private void StartGame()
+    {
+        HttpClient httpClient = new HttpClient();
+        var response = httpClient.GetAsync($"https://localhost:7056/StartNewGame?gameSettingsFileLocation={selectedFile}").GetAwaiter().GetResult();
+        if (response.IsSuccessStatusCode)
+        {
+            var content = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            Guid gameID = JsonSerializer.Deserialize<Guid>(content);
+            NavManager.NavigateTo($"/dog2bone/{gameID}");
+        }
+        else
+            throw new Exception("Error while attempting to start game");
+
+   
+    }
+
+}

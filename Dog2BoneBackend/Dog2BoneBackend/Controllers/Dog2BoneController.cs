@@ -21,9 +21,9 @@ namespace Dog2BoneBackend.Controllers
         }
 
         [HttpPost("RestartGame/{gameID}")]
-        public IActionResult RestartGame(Guid gameID, string gameSettingsFileLocation)
+        public IActionResult RestartGame(Guid gameID)
         {
-            return (_dog2BoneService.RestartGame(gameID, gameSettingsFileLocation)) ? Ok() : BadRequest("Unable to start a new game");
+            return (_dog2BoneService.RestartGame(gameID)) ? Ok() : BadRequest("Unable to start a new game");
         }
 
         [HttpPost("FinishGame/{gameID}")]
@@ -32,26 +32,26 @@ namespace Dog2BoneBackend.Controllers
             return (_dog2BoneService.FinishGame(gameID)) ? Ok() : BadRequest("Unable to finish the game properly.");
         }
 
-        [HttpGet("PerformNextDogAction /{gameID}")]
+        [HttpGet("PerformNextDogAction/{gameID}")]
         public GameGridStatus PerformNextDogAction(Guid gameID)
         {
             return _dog2BoneService.PerformNextStep(gameID);
         }
 
-        [HttpGet("PerformRemainingDogActions /{gameID}")]
+        [HttpGet("PerformRemainingDogActions/{gameID}")]
         public GameGridStatus PerformRemainingDogActions(Guid gameID)
         {
             return _dog2BoneService.PerformStepSeries(gameID);
         }
 
-        [HttpGet("GetCurrentGridStatus /{gameID}")]
+        [HttpGet("GetCurrentGridStatus/{gameID}")]
         public GameGridStatus GetCurrentGridStatus(Guid gameID)
         {
             return _dog2BoneService.GetCurrentGameStatus(gameID);
         }
 
         [HttpPost("FeedDogActions/{gameID}")]
-        public IActionResult FeedDogActions(Guid gameID, string actionsFilePath)
+        public IActionResult FeedDogActions(Guid gameID, [FromBody] string actionsFilePath)
         {
             return (_dog2BoneService.FeedDogActions(gameID, actionsFilePath)) ? Ok() : BadRequest("Unable to feed dog actions to game");
         }

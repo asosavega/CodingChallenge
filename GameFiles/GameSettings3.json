@@ -1,0 +1,6 @@
+{
+    "BoardSize" : [3, 8],
+    "StartingPosition" : [2,5],
+    "BonePosition" : [2,7],
+    "CatLocations" : [[1,1],[1,2],[1,6]]
+}

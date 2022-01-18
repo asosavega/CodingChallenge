@@ -15,11 +15,11 @@ namespace Dog2BoneBackend.Services.Implementations
             return newGameID;
         }
 
-        public bool RestartGame(Guid gameID, string gameSettingsFile)
+        public bool RestartGame(Guid gameID)
         {
             try
             {
-                dog2boneInstances.Add(gameID, new GameGrid(gameSettingsFile));
+                dog2boneInstances[gameID].RestartGame();
             }
             catch
             {
