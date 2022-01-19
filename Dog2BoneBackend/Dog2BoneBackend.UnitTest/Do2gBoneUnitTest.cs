@@ -14,7 +14,7 @@ namespace Dog2BoneBackend.UnitTest
         public void LoadGameSettingsAndShowGridStatus()
         {
             HttpClient restClient = new HttpClient();
-            string testGameFile = @"C:\Users\alexa\Desktop\CodingChallenge\GameFiles\GameSettings1.json";
+            string testGameFile = @"..\..\..\..\..\\GameFiles\GameSettings1.json";
             FileInfo gameFileInfo = new FileInfo(testGameFile);
 
             var response = restClient.GetAsync($"https://localhost:5001/StartNewGame?gameSettingsFileLocation={gameFileInfo.FullName}").GetAwaiter().GetResult();
@@ -40,7 +40,7 @@ namespace Dog2BoneBackend.UnitTest
         public void LoadGameSettingsAndDogActions()
         {
             HttpClient restClient = new HttpClient();
-            string testGameFile = @"C:\Users\alexa\Desktop\CodingChallenge\GameFiles\GameSettings1.json";
+            string testGameFile = @"..\..\..\..\..\\GameFiles\GameSettings1.json";
             FileInfo gameFileInfo = new FileInfo(testGameFile);
 
             var response = restClient.GetAsync($"https://localhost:5001/StartNewGame?gameSettingsFileLocation={gameFileInfo.FullName}").GetAwaiter().GetResult();
@@ -49,7 +49,7 @@ namespace Dog2BoneBackend.UnitTest
             var content = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
             Guid gameID = JsonSerializer.Deserialize<Guid>(content);
 
-            string dogActionFiles = @"C:\Users\alexa\Desktop\CodingChallenge\GameFiles\dogActions1.txt";
+            string dogActionFiles = @"..\..\..\..\..\\GameFiles\dogActions1.txt";
             gameFileInfo = new FileInfo(dogActionFiles);
             string postJson = JsonSerializer.Serialize(gameFileInfo.FullName);
 
@@ -76,7 +76,7 @@ namespace Dog2BoneBackend.UnitTest
         public void SuccessGameScenario()
         {
             HttpClient restClient = new HttpClient();
-            string testGameFile = @"C:\Users\alexa\Desktop\CodingChallenge\GameFiles\GameSettings1.json";
+            string testGameFile = @"..\..\..\..\..\\GameFiles\GameSettings1.json";
             FileInfo gameFileInfo = new FileInfo(testGameFile);
 
             var response = restClient.GetAsync($"https://localhost:5001/StartNewGame?gameSettingsFileLocation={gameFileInfo.FullName}").GetAwaiter().GetResult();
@@ -88,8 +88,8 @@ namespace Dog2BoneBackend.UnitTest
 
             FileInfo[] dogActionFileInfo = new FileInfo[]
             {
-                new FileInfo(@"C:\Users\alexa\Desktop\CodingChallenge\GameFiles\dogActions3.txt"),
-                new FileInfo(@"C:\Users\alexa\Desktop\CodingChallenge\GameFiles\dogActions4.txt")
+                new FileInfo(@"..\..\..\..\..\\GameFiles\dogActions3.txt"),
+                new FileInfo(@"..\..\..\..\..\\GameFiles\dogActions4.txt")
             };
 
             foreach(FileInfo fileInfo in dogActionFileInfo)
@@ -129,7 +129,7 @@ namespace Dog2BoneBackend.UnitTest
         public void FailedGameScenario()
         {
             HttpClient restClient = new HttpClient();
-            string testGameFile = @"C:\Users\alexa\Desktop\CodingChallenge\GameFiles\GameSettings1.json";
+            string testGameFile = @"..\..\..\..\..\\GameFiles\GameSettings1.json";
             FileInfo gameFileInfo = new FileInfo(testGameFile);
 
             var response = restClient.GetAsync($"https://localhost:5001/StartNewGame?gameSettingsFileLocation={gameFileInfo.FullName}").GetAwaiter().GetResult();
@@ -141,8 +141,8 @@ namespace Dog2BoneBackend.UnitTest
 
             FileInfo[] dogActionFileInfo = new FileInfo[]
             {
-                new FileInfo(@"C:\Users\alexa\Desktop\CodingChallenge\GameFiles\dogActions4.txt"),
-                new FileInfo(@"C:\Users\alexa\Desktop\CodingChallenge\GameFiles\dogActions3.txt")
+                new FileInfo(@"..\..\..\..\..\\GameFiles\dogActions4.txt"),
+                new FileInfo(@"..\..\..\..\..\\GameFiles\dogActions3.txt")
             };
 
             foreach (FileInfo fileInfo in dogActionFileInfo)
@@ -182,7 +182,7 @@ namespace Dog2BoneBackend.UnitTest
         public void GameInProgressScenario()
         {
             HttpClient restClient = new HttpClient();
-            string testGameFile = @"C:\Users\alexa\Desktop\CodingChallenge\GameFiles\GameSettings1.json";
+            string testGameFile = @"..\..\..\..\..\\GameFiles\GameSettings1.json";
             FileInfo gameFileInfo = new FileInfo(testGameFile);
 
             var response = restClient.GetAsync($"https://localhost:5001/StartNewGame?gameSettingsFileLocation={gameFileInfo.FullName}").GetAwaiter().GetResult();
@@ -194,8 +194,8 @@ namespace Dog2BoneBackend.UnitTest
 
             FileInfo[] dogActionFileInfo = new FileInfo[]
             {
-                new FileInfo(@"C:\Users\alexa\Desktop\CodingChallenge\GameFiles\dogActions3.txt"),
-                new FileInfo(@"C:\Users\alexa\Desktop\CodingChallenge\GameFiles\dogActions6.txt")
+                new FileInfo(@"..\..\..\..\..\\GameFiles\dogActions3.txt"),
+                new FileInfo(@"..\..\..\..\..\\GameFiles\dogActions6.txt")
             };
 
             foreach (FileInfo fileInfo in dogActionFileInfo)
